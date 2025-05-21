@@ -3,10 +3,11 @@ const multer = require('multer');
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
-
+const cors = require('cors');
 const app = express();
 const port = 4000;
 
+app.use(cors());
 // Configure storage for uploaded files
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

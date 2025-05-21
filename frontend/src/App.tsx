@@ -30,7 +30,7 @@ function App() {
 
     try {
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('image', file)
 
       const response = await fetch('http://localhost:4000/classify', {
         method: 'POST',
