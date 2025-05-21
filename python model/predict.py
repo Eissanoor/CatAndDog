@@ -9,9 +9,10 @@ from tkinter import filedialog
 
 # Set paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, 'cat_dog_model.h5')
+MODEL_PATH = os.path.join(BASE_DIR, 'cat_dog_model1.1.h5')
 IMG_WIDTH = 224  # Reduced from 500
 IMG_HEIGHT = 224  # Reduced from 374
+CONFIDENCE_THRESHOLD = 0.70  # Threshold for confident predictions
 
 def load_and_preprocess_image(image_path):
     """Load and preprocess an image for prediction"""
@@ -28,9 +29,15 @@ def predict_image(model, image_path):
     # Make prediction
     prediction = model.predict(img_array)[0][0]
     
-    # Determine class (0 = cat, 1 = dog)
-    class_name = "Dog" if prediction > 0.5 else "Cat"
-    confidence = prediction if prediction > 0.5 else 1 - prediction
+    # Check confidence level
+    if prediction < (1 - CONFIDENCE_THRESHOLD) or prediction > CONFIDENCE_THRESHOLD:
+        # Confident prediction
+        class_name = "Dog" if prediction > 0.5 else "Cat"
+        confidence = prediction if prediction > 0.5 else 1 - prediction
+    else:
+        # Not confident enough - likely neither cat nor dog
+        class_name = "Neither Cat nor Dog"
+        confidence = max(prediction, 1 - prediction)
     
     return class_name, confidence, img
 

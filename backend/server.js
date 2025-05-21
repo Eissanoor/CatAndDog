@@ -45,7 +45,7 @@ app.post('/classify', upload.single('image'), (req, res) => {
   console.log(imagePath);
   
   // Use model from same directory as server.js
-  const modelPath = path.join(__dirname, 'cat_dog_model.h5');
+  const modelPath = path.join(__dirname, 'cat_dog_model1.1.h5');
   
   console.log(`Using model at: ${modelPath}`);
 

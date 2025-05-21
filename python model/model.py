@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf             
 from tensorflow.keras import layers, models, optimizers # type: ignore
-from tensorflow.keras.preprocessing.image import ImageDataGenerator # type: ignore
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array # type: ignore
 from tensorflow.keras.applications import MobileNetV2 # type: ignore
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau # type: ignore
 import matplotlib.pyplot as plt # type: ignore
@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt # type: ignore
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TRAIN_DIR = os.path.join(BASE_DIR, 'data', 'train')
 VALIDATION_DIR = os.path.join(BASE_DIR, 'data', 'validation')
-MODEL_PATH = os.path.join(BASE_DIR, 'cat_dog_model.h5')
+MODEL_PATH = os.path.join(BASE_DIR, 'cat_dog_model1.1.h5')
 
 # Parameters
 IMG_WIDTH = 224  # Reduced from 500
@@ -19,6 +19,7 @@ IMG_HEIGHT = 224  # Reduced from 374
 BATCH_SIZE = 16  # Reduced from 32
 EPOCHS = 20
 LEARNING_RATE = 1e-4
+CONFIDENCE_THRESHOLD = 0.70  # Threshold for confident predictions
 
 def create_data_generators():
     """Create and return training and validation data generators with augmentation"""
@@ -209,6 +210,38 @@ def plot_training_history(history):
     
     plt.savefig(os.path.join(BASE_DIR, 'training_history.png'))
     plt.show()
+
+def predict_image(image_path, model, confidence_threshold=CONFIDENCE_THRESHOLD):
+    """
+    Predict if an image contains a cat or a dog, with confidence threshold
+    to identify images that are neither cats nor dogs.
+    
+    Args:
+        image_path: Path to the image file
+        model: Loaded model for prediction
+        confidence_threshold: Minimum confidence required for a valid prediction
+        
+    Returns:
+        Prediction result as a string: 'cat', 'dog', or 'neither cat nor dog'
+    """
+    # Load and preprocess the image
+    img = load_img(image_path, target_size=(IMG_WIDTH, IMG_HEIGHT))
+    img_array = img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0) / 255.0
+    
+    # Make prediction
+    prediction = model.predict(img_array)[0][0]
+    
+    # Check confidence level
+    if prediction < (1 - confidence_threshold) or prediction > confidence_threshold:
+        # Confident prediction
+        if prediction > 0.5:
+            return 'dog', prediction
+        else:
+            return 'cat', 1 - prediction
+    else:
+        # Not confident enough - likely neither cat nor dog
+        return 'neither cat nor dog', max(prediction, 1 - prediction)
 
 def main():
     # Create data generators
